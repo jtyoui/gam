@@ -7,7 +7,7 @@ package dao
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jtyoui/ginRoute/dao/post"
-	"github.com/jtyoui/ginRoute/tool"
+	"github.com/jtyoui/ginRoute/web"
 	"reflect"
 )
 
@@ -30,7 +30,7 @@ func removePtr(t reflect.Type) reflect.Type {
 	req 表示请求类型
 	暂且不支持其它类型
 */
-func (b *BindHandler) BindParams(hrm tool.HRM) func(context *gin.Context) {
+func (b *BindHandler) BindParams(hrm web.HRM) func(context *gin.Context) {
 	num := b.Type.NumIn() // 获取函数的参数个数
 	params := make([]reflect.Value, num)
 	f := func(c *gin.Context) {
@@ -45,9 +45,9 @@ func (b *BindHandler) BindParams(hrm tool.HRM) func(context *gin.Context) {
 			}
 
 			switch hrm {
-			case tool.GET, tool.DELETE:
+			case web.GET, web.DELETE:
 				params[i] = GetBind(c, rp, b.Params[i])
-			case tool.POST, tool.PUT:
+			case web.POST, web.PUT:
 				params[i] = post.JsonBind(c, rp)
 			}
 		}

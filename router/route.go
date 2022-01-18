@@ -9,6 +9,7 @@ import (
 	"github.com/jtyoui/ginRoute/dao"
 	"github.com/jtyoui/ginRoute/router/name"
 	"github.com/jtyoui/ginRoute/tool"
+	"github.com/jtyoui/ginRoute/web"
 	"reflect"
 	"strings"
 )
@@ -55,7 +56,7 @@ func (g *GinRouter) SetRouter(router interface{}) {
 		methodName := method.MethodName
 
 		// 根据正则表达式来判断函数头是否满足,不满足立即跳出
-		if prefix := tool.IsHttpProtocol(methodName); prefix != tool.Nil {
+		if prefix := web.IsHttpProtocol(methodName); prefix != web.Nil {
 			hrm := prefix.String()            // 获取字符串
 			fun := v.MethodByName(methodName) // 根据名称来获取函数对象
 

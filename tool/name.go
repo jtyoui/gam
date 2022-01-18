@@ -86,5 +86,5 @@ func Underline(name string) string {
 			value = append(value, i)
 		}
 	}
-	return strings.TrimLeft(string(value), "_")
+	return strings.TrimPrefix(string(value), "_")
 }

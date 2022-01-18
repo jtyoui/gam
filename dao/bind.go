@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jtyoui/ginRoute/dao/post"
 	"github.com/jtyoui/ginRoute/web"
+	"net/http"
 	"reflect"
 )
 
@@ -44,12 +45,19 @@ func (b *BindHandler) BindParams(hrm web.HRM) func(context *gin.Context) {
 				continue
 			}
 
+			var value reflect.Value
+			var err error
 			switch hrm {
 			case web.GET, web.DELETE:
-				params[i] = GetBind(c, rp, b.Params[i])
+				value, err = GetBind(c, rp, b.Params[i])
 			case web.POST, web.PUT:
-				params[i] = post.JsonBind(c, rp)
+				value, err = post.JsonBind(c, rp)
 			}
+			if err != nil {
+				c.JSON(http.StatusOK, web.NewError(err))
+				return
+			}
+			params[i] = value
 		}
 		b.F.Call(params)
 	}

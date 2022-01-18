@@ -10,10 +10,13 @@ import (
 )
 
 // JsonBind 基本json入参绑定
-func JsonBind(c *gin.Context, t reflect.Type) reflect.Value {
+func JsonBind(c *gin.Context, t reflect.Type) (r reflect.Value, err error) {
 	param := reflect.New(t).Interface()
-	if err := c.ShouldBindJSON(&param); err != nil {
-		panic(err)
+	err = c.ShouldBindJSON(&param)
+	if err != nil {
+		return
 	}
-	return reflect.ValueOf(param)
+
+	r = reflect.ValueOf(param).Elem()
+	return
 }

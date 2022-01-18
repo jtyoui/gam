@@ -5,16 +5,19 @@
 package dao
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"reflect"
 )
 
 // GetBind 基本get入参绑定
-func GetBind(c *gin.Context, t reflect.Type, varName string) reflect.Value {
+func GetBind(c *gin.Context, t reflect.Type, varName string) (r reflect.Value, err error) {
 	value := c.Query(varName)
 	result, err := StringToAny(value, t)
 	if err != nil {
-		panic(err)
+		err = errors.New("参数" + varName + "绑定失败")
+		return
 	}
-	return reflect.ValueOf(result)
+	r = reflect.ValueOf(result)
+	return
 }

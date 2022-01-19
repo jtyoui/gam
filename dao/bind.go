@@ -7,6 +7,7 @@ package dao
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jtyoui/ginRoute/dao/post"
+	"github.com/jtyoui/ginRoute/tool"
 	"github.com/jtyoui/ginRoute/web"
 	"net/http"
 	"reflect"
@@ -16,14 +17,6 @@ type BindHandler struct {
 	F      reflect.Value
 	Type   reflect.Type
 	Params []string
-}
-
-// 去掉指针
-func removePtr(t reflect.Type) reflect.Type {
-	if t.Kind() == reflect.Ptr {
-		return t.Elem()
-	}
-	return t
 }
 
 /*
@@ -36,8 +29,8 @@ func (b *BindHandler) BindParams(hrm web.HRM) func(context *gin.Context) {
 	params := make([]reflect.Value, num)
 	f := func(c *gin.Context) {
 		for i := 0; i < num; i++ { // 遍历每一个具体的参数
-			p := b.Type.In(i)  // 获取具体的参数信息
-			rp := removePtr(p) // 去掉类型指针
+			p := b.Type.In(i)       // 获取具体的参数信息
+			rp := tool.RemovePtr(p) // 去掉类型指针
 
 			// 判断参数是不是*gin.Context
 			if p.Kind() == reflect.Ptr && rp.Name() == "Context" {
@@ -56,6 +49,9 @@ func (b *BindHandler) BindParams(hrm web.HRM) func(context *gin.Context) {
 			if err != nil {
 				c.JSON(http.StatusOK, web.NewError(err))
 				return
+			}
+			if p.Kind() != reflect.Ptr {
+				value = value.Elem()
 			}
 			params[i] = value
 		}

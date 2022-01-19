@@ -11,18 +11,17 @@ import (
 // ReflectByValue 根据结构体获取该结构体的值类型，
 // 传入的结构体必须是指针类型
 func ReflectByValue(router interface{}) reflect.Value {
-	t := reflect.TypeOf(router)
+	t := reflect.ValueOf(router)
 	if t.Kind() != reflect.Ptr {
 		panic("必须传入指针类型")
 	}
-	return reflect.ValueOf(router)
+	return t
 }
 
-// IsNil 判断反射类型是不是为nil
-func IsNil(v reflect.Value) bool {
-	switch v.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice, reflect.UnsafePointer:
-		return v.IsNil()
+// RemovePtr 去掉指针
+func RemovePtr(t reflect.Type) reflect.Type {
+	if t.Kind() == reflect.Ptr {
+		return t.Elem()
 	}
-	return false
+	return t
 }

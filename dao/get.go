@@ -13,11 +13,10 @@ import (
 // GetBind 基本get入参绑定
 func GetBind(c *gin.Context, t reflect.Type, varName string) (r reflect.Value, err error) {
 	value := c.Query(varName)
-	result, err := StringToAny(value, t)
+	r, err = StringToAny(value, t)
 	if err != nil {
-		err = errors.New("参数" + varName + "绑定失败")
+		err = errors.New("参数" + varName + "绑定失败:" + err.Error())
 		return
 	}
-	r = reflect.ValueOf(result)
 	return
 }

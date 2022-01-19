@@ -12,11 +12,10 @@ import (
 // JsonBind 基本json入参绑定
 func JsonBind(c *gin.Context, t reflect.Type) (r reflect.Value, err error) {
 	param := reflect.New(t).Interface()
-	err = c.ShouldBindJSON(&param)
+	err = c.ShouldBindJSON(param)
 	if err != nil {
 		return
 	}
-
-	r = reflect.ValueOf(param).Elem()
+	r = reflect.ValueOf(param)
 	return
 }

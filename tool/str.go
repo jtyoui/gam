@@ -36,6 +36,9 @@ func readGoMod() (mod string) {
 func GetFilePathByReflect(t reflect.Type) string {
 	tf := t.Elem()
 	pkgPath := tf.PkgPath()
+	if pkgPath == "main" {
+		return tf.Name() + ".go"
+	}
 	goMod := readGoMod()
 	if goMod == "" {
 		panic("请填写正确的go.mod文件")

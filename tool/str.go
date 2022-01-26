@@ -29,15 +29,16 @@ func readGoMod() (mod string) {
 			return number[1]
 		}
 	}
-	return
 }
 
 // GetFilePathByReflect 根据反射来获取文件地址路径
 func GetFilePathByReflect(t reflect.Type) string {
 	tf := t.Elem()
+	fileName := tf.Name()          // 获取文件名称
+	fileName = Underline(fileName) // 将文件名称改成蛇形命名
 	pkgPath := tf.PkgPath()
 	if pkgPath == "main" {
-		return tf.Name() + ".go"
+		return fileName + ".go"
 	}
 	goMod := readGoMod()
 	if goMod == "" {
@@ -48,6 +49,6 @@ func GetFilePathByReflect(t reflect.Type) string {
 	if err != nil {
 		panic(err)
 	}
-	p := filepath.Join(address, tf.Name()+".go")
+	p := filepath.Join(address, fileName+".go")
 	return p
 }

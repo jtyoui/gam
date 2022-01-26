@@ -71,12 +71,12 @@ func Pascal(name string) string {
 	return name
 }
 
-// Underline 下划线
+// Underline 蛇形命名 下划线
 func (n *NameTo) Underline() string {
 	return Underline(n.Name)
 }
 
-// Underline 下划线
+// Underline 蛇形命名 下划线
 func Underline(name string) string {
 	value := make([]int32, 0, len(name))
 	for _, i := range name {

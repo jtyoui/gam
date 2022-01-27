@@ -6,12 +6,12 @@ package dao
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/jtyoui/ginRoute/dao/post"
-	"github.com/jtyoui/ginRoute/tool"
-	"github.com/jtyoui/ginRoute/web"
 	"net/http"
 	"reflect"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jtyoui/ginRoute/tool"
+	"github.com/jtyoui/ginRoute/web"
 )
 
 type BindHandler struct {
@@ -31,31 +31,22 @@ func (b *BindHandler) BindParams(hrm web.HRM) func(context *gin.Context) {
 	f := func(c *gin.Context) {
 		for i := 0; i < num; i++ { // 遍历每一个具体的参数
 			p := b.Type.In(i)       // 获取具体的参数信息
-			rp := tool.RemovePtr(p) // 去掉类型指针
+			rp := tool.RemovePtr(p) // 去掉类型指针，默认统一为非指针类型
+			query := b.Params[i]    // 形参
 
 			// 判断参数是不是*gin.Context
 			if p.Kind() == reflect.Ptr && rp.Name() == "Context" {
 				params[i] = reflect.ValueOf(c) // 如果是gin的上下文直接返回
 				continue
 			}
-
-			var (
-				value reflect.Value
-				err   error
-			)
-
-			switch hrm {
-			case web.GET, web.DELETE:
-				value, err = GetBind(c, rp, b.Params[i]) // 走的get绑定
-			case web.POST, web.PUT:
-				value, err = post.JsonBind(c, rp) // 走的post绑定。现在默认只有json格式
-			}
+			method := newMethodBind(c, hrm, rp, query) // 获取方法的结构体
+			value, err := method.valueByMethod()       // 根据具体的参数来获取值
 			if err != nil {
 				response(c, web.NewError(err)) // 绑定失败
 				return
 			}
 			if p.Kind() != reflect.Ptr { // 判断绑定是不是指针类型
-				value = value.Elem()
+				value = value.Elem() // 如果是指针需要解引用，这点很重要，因为我默认所有的参数都是非指针类型
 			}
 			params[i] = value
 		}

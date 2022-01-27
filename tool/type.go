@@ -1,8 +1,8 @@
-// Package dao
+// Package tool
 // @Time  : 2022/1/17 下午5:51
 // @Author: Jtyoui@qq.com
 // @note  : 类型转化
-package dao
+package tool
 
 import (
 	"reflect"

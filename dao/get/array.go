@@ -35,6 +35,8 @@ func ArrayBind(c *gin.Context, t reflect.Type, varName string) (r reflect.Value,
 		r = reflect.ValueOf(&data)
 	case "[]string":
 		r = reflect.ValueOf(&value)
+	default:
+		panic("GET参数类型暂时不支持：" + typ)
 	}
 	return
 }

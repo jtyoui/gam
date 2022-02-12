@@ -15,9 +15,9 @@ import (
 
 type methodBind struct {
 	c    *gin.Context
-	h    web.HRM
-	typ  reflect.Type
-	name string
+	h    web.HRM      // 请求协议
+	typ  reflect.Type // 获取该方法的数据类型
+	name string       // 参数名称
 }
 
 func newMethodBind(c *gin.Context, h web.HRM, t reflect.Type, n string) *methodBind {
@@ -27,7 +27,7 @@ func newMethodBind(c *gin.Context, h web.HRM, t reflect.Type, n string) *methodB
 func (m *methodBind) get() (r reflect.Value, err error) {
 	switch m.typ.Kind() {
 	case reflect.Slice:
-		r, err = get.ArrayBind(m.c, m.typ, m.name)
+		r, err = get.ArrayBind(m.c, m.typ, m.name) // 走数组绑定，数组遵守gin的绑定规则
 	default:
 		r, err = get.QueryBind(m.c, m.typ, m.name) // 走的get绑定
 	}
@@ -35,14 +35,21 @@ func (m *methodBind) get() (r reflect.Value, err error) {
 }
 
 func (m *methodBind) post() (r reflect.Value, err error) {
-	r, err = post.JsonBind(m.c, m.typ) // 走的post绑定。现在默认只有json格式
+	switch m.typ.Kind() {
+	case reflect.Struct, reflect.Slice:
+		r, err = post.JsonBind(m.c, m.typ, m.name) // 走的post绑定。现在默认只有json格式
+	default:
+		r, err = post.FormBind(m.c, m.typ, m.name)
+	}
 	return
 }
 
+// todo 有待优化：此处走的是get操作，但是不一定
 func (m *methodBind) delete() (r reflect.Value, err error) {
 	return m.get()
 }
 
+// todo 有待优化：此处走的是Post操作，但是不一定
 func (m *methodBind) put() (r reflect.Value, err error) {
 	return m.post()
 }

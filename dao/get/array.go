@@ -35,7 +35,7 @@ func ArrayBind(c *gin.Context, t reflect.Type, varName string) (r reflect.Value,
 		r = reflect.ValueOf(&data)
 	case "[]string":
 		r = reflect.ValueOf(&value)
-	default:
+	default: // todo 待优化：关于其它的切片类型
 		panic("GET参数类型暂时不支持：" + typ)
 	}
 	return

@@ -6,6 +6,7 @@ package tool
 
 import (
 	"bufio"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -13,26 +14,35 @@ import (
 )
 
 // 对方项目必须是go mod形式。读取mod文件，返回自定义库
-func readGoMod() (mod string) {
-	rf, err := os.Open("go.mod")
+func (s *GoFileScanner) readGoMod() (mod string) {
+	var rf io.Reader
+	var err error
+	if s.fs == nil {
+		rf, err = os.Open("go.mod")
+	} else {
+		rf, err = s.fs.Open("go.mod")
+	}
+
 	if err != nil {
 		panic("项目必须是go mod形式,没有找到mod文件")
 	}
-	defer func(rf *os.File) { _ = rf.Close() }(rf)
-
 	br := bufio.NewReader(rf)
 	for {
-		a, _, _ := br.ReadLine()
+		a, _, err := br.ReadLine()
 		line := strings.TrimSpace(string(a))
 		if line != "" {
 			number := strings.Split(line, " ")
 			return number[1]
 		}
+		if err == io.EOF {
+			break
+		}
 	}
+	return
 }
 
 // GetFilePathByReflect 根据反射来获取文件地址路径
-func GetFilePathByReflect(t reflect.Type) string {
+func (s *GoFileScanner) GetFilePathByReflect(t reflect.Type) string {
 	tf := t.Elem()
 	fileName := tf.Name()          // 获取文件名称
 	fileName = Underline(fileName) // 将文件名称改成蛇形命名
@@ -40,15 +50,19 @@ func GetFilePathByReflect(t reflect.Type) string {
 	if pkgPath == "main" {
 		return fileName + ".go"
 	}
-	goMod := readGoMod()
+	goMod := s.readGoMod()
 	if goMod == "" {
 		panic("请填写正确的go.mod文件")
 	}
 	suffix := strings.TrimPrefix(pkgPath, goMod)
-	address, err := filepath.Abs("./" + suffix)
-	if err != nil {
-		panic(err)
+
+	if s.fs == nil {
+		address, err := filepath.Abs("./" + suffix)
+		if err != nil {
+			panic(err)
+		}
+		return filepath.Join(address, fileName+".go")
 	}
-	p := filepath.Join(address, fileName+".go")
-	return p
+
+	return filepath.Join(".", suffix, fileName+".go")
 }

@@ -5,6 +5,7 @@
 package tool
 
 import (
+	"embed"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -22,17 +23,28 @@ type Method struct {
 
 type GoFileScanner struct {
 	methods map[string][]Method
+	fs      *embed.FS
 }
 
-func NewGoFileScanner() *GoFileScanner {
+func NewGoFileScanner(fs *embed.FS) *GoFileScanner {
 	return &GoFileScanner{
 		methods: make(map[string][]Method),
+		fs:      fs,
 	}
 }
 
 func (s *GoFileScanner) ParseFile(filename string) error {
 	fileSet := token.NewFileSet()
-	astFile, err := parser.ParseFile(fileSet, filename, nil, parser.ParseComments)
+	var astFile *ast.File
+	var err error
+
+	if s.fs == nil {
+		astFile, err = parser.ParseFile(fileSet, filename, nil, parser.ParseComments)
+	} else {
+		src, _ := s.fs.ReadFile(filename)
+		astFile, err = parser.ParseFile(fileSet, "", src, parser.ParseComments)
+	}
+
 	if err != nil {
 		return err
 	}

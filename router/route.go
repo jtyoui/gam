@@ -5,6 +5,7 @@
 package router
 
 import (
+	"embed"
 	"github.com/gin-gonic/gin"
 	"github.com/jtyoui/ginRoute/dao"
 	"github.com/jtyoui/ginRoute/router/name"
@@ -14,15 +15,29 @@ import (
 	"strings"
 )
 
-// GinRouter 使用说明
-type GinRouter struct {
+// ginRouter 使用说明
+type ginRouter struct {
 	Router     *gin.RouterGroup
 	ChangeName name.ChangeName
+	FS         *embed.FS
+}
+
+// NewGinRouter 初始化
+func NewGinRouter(g *gin.RouterGroup, fs *embed.FS) *ginRouter {
+	return &ginRouter{
+		Router: g,
+		FS:     fs,
+	}
+}
+
+// SetChangeNameFunc 自定义全局命名规范
+func (g *ginRouter) SetChangeNameFunc(fun name.ChangeName) {
+	g.ChangeName = fun
 }
 
 // findName 获取该结构体的定义名称，如果结构体没有实现IGroupName接口，那么默认
 // 路由名称是该结构体名字的小写，否则是定义函数的返回值
-func (g *GinRouter) setName(v reflect.Value, path string, f NameFunc) (value string) {
+func (g *ginRouter) setName(v reflect.Value, path string, f NameFunc) (value string) {
 	value, ok := f.GetName(v, path)
 	if !ok {
 		value = g.ChangeName.Change(path)
@@ -31,7 +46,7 @@ func (g *GinRouter) setName(v reflect.Value, path string, f NameFunc) (value str
 }
 
 // SetRouter 设置单一的路由
-func (g *GinRouter) SetRouter(router interface{}) {
+func (g *ginRouter) SetRouter(router interface{}) {
 	v := tool.ReflectByValue(router) // 初始化的结构体
 	t := v.Type()                    // 转为类型
 
@@ -43,8 +58,8 @@ func (g *GinRouter) SetRouter(router interface{}) {
 	newRouter := g.Router.Group(groupName)
 
 	// 扫描go文件获取变量名称
-	scanner := tool.NewGoFileScanner()
-	filePath := tool.GetFilePathByReflect(t)
+	scanner := tool.NewGoFileScanner(g.FS)
+	filePath := scanner.GetFilePathByReflect(t)
 	err := scanner.ParseFile(filePath)
 	if err != nil {
 		panic(err)
@@ -97,7 +112,7 @@ func (g *GinRouter) SetRouter(router interface{}) {
 }
 
 // AutoRouter 自动注册路由
-func (g *GinRouter) AutoRouter(routers ...interface{}) {
+func (g *ginRouter) AutoRouter(routers ...interface{}) {
 	// 扫描只要实现了该方法的接口
 	for _, router := range routers {
 		g.SetRouter(router)

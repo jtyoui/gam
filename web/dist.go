@@ -8,12 +8,12 @@ import (
 	"embed"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/jtyoui/ginRoute/tool"
 	"io/fs"
 	"net/http"
 	"path"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 )
 
@@ -142,10 +142,8 @@ func realValidPath(dir string, address string) string {
 	// 拼接地址
 	root := filepath.Join(dir, address)
 
-	// 判断是否是非Linux系统，全部的路径符号需要将\转为/
-	if runtime.GOOS != "linux" {
-		root = strings.ReplaceAll(root, "\\", "/")
-	}
+	// 全部的路径符号需要将\转为/
+	root = tool.ReplaceSepByFS(root)
 
 	return root
 }

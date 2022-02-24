@@ -66,3 +66,10 @@ func (s *GoFileScanner) GetFilePathByReflect(t reflect.Type) string {
 
 	return filepath.Join(".", suffix, fileName+".go")
 }
+
+// ReplaceSepByFS 判断是否是非Linux系统，全部的路径符号需要将\转为/
+// 在Fs中，所有的sep全是/
+func ReplaceSepByFS(path string) string {
+	root := strings.ReplaceAll(path, "\\", "/")
+	return root
+}

@@ -12,7 +12,7 @@ import (
 	"go/token"
 )
 
-var DefaultName = "__local__"
+const DefaultName = "__local__"
 
 type Method struct {
 	Comments   []string
@@ -41,7 +41,7 @@ func (s *GoFileScanner) ParseFile(filename string) error {
 	if s.fs == nil {
 		astFile, err = parser.ParseFile(fileSet, filename, nil, parser.ParseComments)
 	} else {
-		src, _ := s.fs.ReadFile(filename)
+		src, _ := s.fs.ReadFile(ReplaceSepByFS(filename))
 		astFile, err = parser.ParseFile(fileSet, "", src, parser.ParseComments)
 	}
 

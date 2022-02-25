@@ -10,14 +10,24 @@ import (
 	"reflect"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jtyoui/ginRoute/tool"
-	"github.com/jtyoui/ginRoute/web"
+	"github.com/jtyoui/gam/tool"
+	"github.com/jtyoui/gam/web"
 )
 
-type BindHandler struct {
+type bindHandler struct {
 	F      reflect.Value
 	Type   reflect.Type
 	Params []string
+}
+
+// NewBindHandler 将参数绑定到反射中
+func NewBindHandler(value reflect.Value, params []string) *bindHandler {
+	bind := &bindHandler{
+		F:      value,
+		Type:   value.Type(),
+		Params: params,
+	}
+	return bind
 }
 
 /*
@@ -25,7 +35,7 @@ type BindHandler struct {
 	req 表示请求类型
 	暂且不支持其它类型
 */
-func (b *BindHandler) BindParams(hrm web.HRM) func(context *gin.Context) {
+func (b *bindHandler) BindParams(hrm web.HRM) func(context *gin.Context) {
 	num := b.Type.NumIn() // 获取函数的参数个数
 	params := make([]reflect.Value, num)
 	f := func(c *gin.Context) {

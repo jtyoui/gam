@@ -6,7 +6,7 @@ package base
 
 import (
 	"errors"
-	"github.com/jtyoui/ginRoute/tool"
+	"github.com/jtyoui/gam/tool"
 	"reflect"
 )
 

@@ -4,7 +4,7 @@
 // @note  : 命名规范类型
 package name
 
-import "github.com/jtyoui/ginRoute/tool"
+import "github.com/jtyoui/gam/tool"
 
 // NamingConvention 路由命名规范
 type NamingConvention uint

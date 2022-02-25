@@ -5,7 +5,7 @@
 package router
 
 import (
-	"github.com/jtyoui/ginRoute/router/name"
+	"github.com/jtyoui/gam/router/name"
 	"reflect"
 )
 

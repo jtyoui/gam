@@ -1,4 +1,4 @@
-module github.com/jtyoui/ginRoute
+module github.com/jtyoui/gam
 
 go 1.16
 

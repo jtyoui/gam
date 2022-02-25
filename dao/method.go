@@ -8,9 +8,9 @@ import (
 	"reflect"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jtyoui/ginRoute/dao/get"
-	"github.com/jtyoui/ginRoute/dao/post"
-	"github.com/jtyoui/ginRoute/web"
+	"github.com/jtyoui/gam/dao/get"
+	"github.com/jtyoui/gam/dao/post"
+	"github.com/jtyoui/gam/web"
 )
 
 type methodBind struct {

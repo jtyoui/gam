@@ -6,7 +6,7 @@ package get
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jtyoui/ginRoute/dao/base"
+	"github.com/jtyoui/gam/dao/base"
 	"reflect"
 )
 

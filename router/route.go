@@ -7,32 +7,27 @@ package router
 import (
 	"embed"
 	"github.com/gin-gonic/gin"
-	"github.com/jtyoui/ginRoute/dao"
-	"github.com/jtyoui/ginRoute/router/name"
-	"github.com/jtyoui/ginRoute/tool"
-	"github.com/jtyoui/ginRoute/web"
+	"github.com/jtyoui/gam/dao"
+	"github.com/jtyoui/gam/router/name"
+	"github.com/jtyoui/gam/tool"
+	"github.com/jtyoui/gam/web"
 	"reflect"
 	"strings"
 )
 
 // ginRouter 使用说明
 type ginRouter struct {
-	Router     *gin.RouterGroup
-	ChangeName name.ChangeName
-	FS         *embed.FS
+	rg *gin.RouterGroup
+	fs *embed.FS
+	name.ChangeName
 }
 
 // NewGinRouter 初始化
 func NewGinRouter(g *gin.RouterGroup, fs *embed.FS) *ginRouter {
 	return &ginRouter{
-		Router: g,
-		FS:     fs,
+		rg: g,
+		fs: fs,
 	}
-}
-
-// SetChangeNameFunc 自定义全局命名规范
-func (g *ginRouter) SetChangeNameFunc(fun name.ChangeName) {
-	g.ChangeName = fun
 }
 
 // findName 获取该结构体的定义名称，如果结构体没有实现IGroupName接口，那么默认
@@ -40,13 +35,13 @@ func (g *ginRouter) SetChangeNameFunc(fun name.ChangeName) {
 func (g *ginRouter) setName(v reflect.Value, path string, f NameFunc) (value string) {
 	value, ok := f.GetName(v, path)
 	if !ok {
-		value = g.ChangeName.Change(path)
+		value = g.Change(path)
 	}
 	return
 }
 
-// SetRouter 设置单一的路由
-func (g *ginRouter) SetRouter(router interface{}) {
+// 设置单一的路由
+func (g *ginRouter) setRouter(router interface{}) {
 	v := tool.ReflectByValue(router) // 初始化的结构体
 	t := v.Type()                    // 转为类型
 
@@ -55,10 +50,10 @@ func (g *ginRouter) SetRouter(router interface{}) {
 	groupName := g.setName(v, r, GroupNameFunc)
 
 	// 将结构体名字加入路由分组
-	newRouter := g.Router.Group(groupName)
+	newRouter := g.rg.Group(groupName)
 
 	// 扫描go文件获取变量名称
-	scanner := tool.NewGoFileScanner(g.FS)
+	scanner := tool.NewGoFileScanner(g.fs)
 	filePath := scanner.GetFilePathByReflect(t)
 	err := scanner.ParseFile(filePath)
 	if err != nil {
@@ -76,11 +71,7 @@ func (g *ginRouter) SetRouter(router interface{}) {
 			fun := v.MethodByName(methodName) // 根据名称来获取函数对象
 
 			// 回调gin来获取上下午对象
-			bind := dao.BindHandler{
-				F:      fun,
-				Type:   fun.Type(),
-				Params: method.Params,
-			}
+			bind := dao.NewBindHandler(fun, method.Params)
 
 			// 绑定路由参数
 			routerFun := bind.BindParams(prefix)
@@ -115,6 +106,6 @@ func (g *ginRouter) SetRouter(router interface{}) {
 func (g *ginRouter) AutoRouter(routers ...interface{}) {
 	// 扫描只要实现了该方法的接口
 	for _, router := range routers {
-		g.SetRouter(router)
+		g.setRouter(router)
 	}
 }

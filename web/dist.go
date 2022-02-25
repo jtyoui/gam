@@ -8,7 +8,7 @@ import (
 	"embed"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/jtyoui/ginRoute/tool"
+	"github.com/jtyoui/gam/tool"
 	"io/fs"
 	"net/http"
 	"path"

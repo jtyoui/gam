@@ -16,17 +16,17 @@ import (
 func JsonBind(c *gin.Context, t reflect.Type, varName string) (r reflect.Value, err error) {
 	param := reflect.New(t).Interface() // 获取类型参数，并不是参数名称
 
-	if err = base.TranslateError(param); err != nil {
-		return
-	}
-
-	err = c.ShouldBindJSON(param)
-	if err != nil {
+	if err = c.ShouldBindJSON(param); err != nil {
 		if err == io.EOF {
 			err = errors.New("绑定的结构体不存在，请检查变量：" + varName)
 		}
 		return
 	}
+
+	if err = base.TranslateError(param); err != nil {
+		return
+	}
+
 	r = reflect.ValueOf(param)
 	return
 }

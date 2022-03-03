@@ -7,6 +7,7 @@ package tool
 import (
 	"fmt"
 	"strings"
+	"unsafe"
 )
 
 type NameTo struct {
@@ -87,4 +88,22 @@ func Underline(name string) string {
 		}
 	}
 	return strings.TrimPrefix(string(value), "_")
+}
+
+// SnakeToCamelCase 将蛇形命名转为驼峰命名
+func SnakeToCamelCase(name string) string {
+	value := make([]byte, 0, len(name))
+	next := false
+	for index, i := range name {
+		if i == 95 {
+			next = true
+			continue
+		}
+		if i >= 97 && (next || index == 0) {
+			i -= 32
+		}
+		value = append(value, byte(i))
+		next = false
+	}
+	return *(*string)(unsafe.Pointer(&value))
 }

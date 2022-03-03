@@ -7,11 +7,13 @@ package cdb
 type ShipType uint // 拼接的关系
 
 const (
-	AND     ShipType = iota // 并且
-	OR                      // 或者
-	LIMIT                   // 限制
-	SELECT                  // 选择
-	NOT                     // 非
-	PRELOAD                 // 预加载
-	ORDER                   // 排序
+	NULL    ShipType = iota
+	AND              // 并且
+	OR               // 或者
+	LIMIT            // 限制
+	SELECT           // 选择
+	NOT              // 非
+	PRELOAD          // 预加载
+	ORDER            // 排序
+	OMIT             // 省略，一般用在更新上
 )

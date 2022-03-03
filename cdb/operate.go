@@ -33,6 +33,7 @@ type Operate struct {
 
 func (o *Operate) Join(db *gorm.DB) *gorm.DB {
 	db = db.Model(tool.ReflectToObject(o.Model))
+
 	for _, f := range o.Fields {
 		db = f.Parse(db)
 	}
@@ -54,19 +55,27 @@ func (o *Operate) Join(db *gorm.DB) *gorm.DB {
 	case FIND:
 		db = db.Find(&data, o.IDs)
 	case UPDATES:
+		/*
+			注意一下 GORM 只会更新非零值的字段，如果需要更新零值字段需要和Select联合使用 https://gorm.io/zh_CN/docs/update.html#%E6%9B%B4%E6%96%B0%E5%A4%9A%E5%88%97
+
+			f1 := gam.NewField("IsFill", "", cdb.NULLMatch, cdb.SELECT) // 选中可能的非零值，如果要全部更新，可以使用*
+			f2 := gam.NewField("id", 10, cdb.AccurateMatch, cdb.AND)    // 更新的筛选条件
+			operate := gam.NewOperate(cdb.UPDATES, Api{IsFill: false}, f1, f2)
+			if err := operate.Join(db).Error; err != nil {
+				panic(err)
+			}
+		*/
 		db = db.Updates(o.Model)
 	case TOTAL:
 		db = db.Count(&o.Total)
 	case SAVE:
 		db = db.Save(o.Model)
-	case UPDATE:
-		// todo
 	case LAST:
 		db = db.Last(&data)
 	case TAKE:
 		db = db.Take(&data)
 	}
-
+	o.Total = db.RowsAffected
 	o.Data = data
 	return db
 }

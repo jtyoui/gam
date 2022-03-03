@@ -40,6 +40,13 @@ var (
 			panic(err)
 		}
 		fmt.Println(operate.Data)
+
+	根据id=10更新api数据
+	operate := gam.NewOperate(cdb.UPDATES, Api{IsFill: true}, gam.DefaultField("id", 10))
+	db = operate.Join(db)
+	if err := db.Error; err != nil {
+		panic(err)
+	}
 */
 func NewOperate(act cdb.ActionType, model interface{}, field ...cdb.Fielder) *cdb.Operate {
 	return &cdb.Operate{

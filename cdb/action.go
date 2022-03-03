@@ -12,7 +12,6 @@ const (
 	LAST
 	FIND
 	DELETE
-	UPDATE
 	UPDATES // 更新整个表
 	TOTAL   // 获取表的总数量
 	SAVE

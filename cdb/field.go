@@ -21,7 +21,7 @@ type field struct {
 }
 
 func (f *field) Parse(db *gorm.DB) *gorm.DB {
-	if f.match == FuzzyMatching {
+	if f.match == FuzzyMatch {
 		f.v = fmt.Sprintf("%%%s%%", f.v)
 	}
 
@@ -44,6 +44,8 @@ func (f *field) Parse(db *gorm.DB) *gorm.DB {
 	case ORDER:
 		factor := fmt.Sprintf("%v %s", f.k, f.match)
 		db = db.Order(factor)
+	case OMIT:
+		db = db.Omit(f.k.(string))
 	}
 	return db
 }
@@ -59,5 +61,5 @@ func NewField(key, value interface{}, match MatchType, ship ShipType) Fielder {
 }
 
 func DefaultField(key, value interface{}) Fielder {
-	return NewField(key, value, AccurateMatching, AND)
+	return NewField(key, value, AccurateMatch, AND)
 }

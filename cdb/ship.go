@@ -8,6 +8,7 @@ type ShipType uint // 拼接的关系
 
 const (
 	NULL    ShipType = iota
+	WHERE            // 并且 等价于 AND
 	AND              // 并且
 	OR               // 或者
 	LIMIT            // 限制

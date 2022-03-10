@@ -7,13 +7,27 @@ package cdb
 import (
 	"fmt"
 	"gorm.io/gorm"
+	"strings"
 )
 
+/*
+	Fielder 对 gorm.DB 进行封装
+
+	该接口实际上只改变DB的拼接条件，对DB应该保持赋值操作
+
+	列如： DB.Where(?).Or(?)...等等
+*/
 type Fielder interface {
 	Parse(db *gorm.DB) *gorm.DB
 }
 
-// 根据过滤属性去拼接db
+/*
+	field 表示一个命令的最小条件单元，根据条件去拼接db
+
+	其中 k v 一般表示要拼接内容的字符串，变量为k,值为v. match 表示内容的拼接方式，是等于还是like还是不等于。 ship 表示执行条件类型
+
+	例如： Where(name = "joke")为一个最小的条件单元，把它拆开: k 为name, v 为joke, match 为=, ship 为 where
+*/
 type field struct {
 	k, v  interface{}
 	match MatchType
@@ -21,12 +35,19 @@ type field struct {
 }
 
 func (f *field) Parse(db *gorm.DB) *gorm.DB {
-	if f.match == FuzzyMatch {
-		f.v = fmt.Sprintf("%%%s%%", f.v)
+	if f.match == FUZ {
+		value := f.v.(string)
+		if !strings.HasPrefix(value, "%") {
+			value = "%" + value
+		}
+		if !strings.HasSuffix(value, "%") {
+			value += "%"
+		}
+		f.v = value // 模糊操作等价于%?%
 	}
 
 	switch f.ship {
-	case AND:
+	case AND, WHERE:
 		factor := fmt.Sprintf("%s %s", f.k, f.match)
 		db = db.Where(factor, f.v)
 	case OR:
@@ -46,6 +67,7 @@ func (f *field) Parse(db *gorm.DB) *gorm.DB {
 		db = db.Order(factor)
 	case OMIT:
 		db = db.Omit(f.k.(string))
+	case NULL: // 不操作
 	}
 	return db
 }
@@ -61,5 +83,5 @@ func NewField(key, value interface{}, match MatchType, ship ShipType) Fielder {
 }
 
 func DefaultField(key, value interface{}) Fielder {
-	return NewField(key, value, AccurateMatch, AND)
+	return NewField(key, value, ACC, AND)
 }

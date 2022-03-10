@@ -7,29 +7,31 @@ package cdb
 type MatchType uint // 匹配类型
 
 const (
-	NULLMatch     MatchType = iota
-	AccurateMatch           // 精准匹配
-	FuzzyMatch              // 模糊匹配
-	RegexpMatch             // 正则匹配
-	ArrayMatch              // in匹配
-	DescMatch               // 降序
-	AscMatch                // 升序
+	NIL  MatchType = iota // 不进行任何匹配操作
+	ACC                   // 精准匹配
+	FUZ                   // 模糊匹配
+	REG                   // 正则匹配
+	IN                    // in匹配
+	DESC                  // 降序
+	ASC                   // 升序
 )
 
 func (m MatchType) String() (s string) {
 	switch m {
-	case FuzzyMatch:
+	case FUZ:
 		s = "LIKE ?"
-	case AccurateMatch:
+	case ACC:
 		s = "= ?"
-	case RegexpMatch:
+	case REG:
 		s = "REGEXP ?"
-	case ArrayMatch:
+	case IN:
 		s = "IN ?"
-	case DescMatch:
+	case DESC:
 		s = "DESC"
-	case AscMatch:
+	case ASC:
 		s = "ASC"
+	case NIL:
+		s = ""
 	}
 	return
 }

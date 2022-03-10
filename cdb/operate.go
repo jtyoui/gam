@@ -10,9 +10,9 @@ import (
 )
 
 /*
-	Operate 操作sql的结构体
+	Operate 表示一条完整的sql命令，包括需要执行的操作，数据库表，返回数据等基本行为。
 
-	Fields 类似于sql中的where条件
+	Fields 无数的sql条件单元
 
 	Model 需要提交哪张表，这是一个go对数据库映射的操作
 
@@ -21,6 +21,38 @@ import (
 	IDs 如果是匹配操作或者需要更加id，需要对 IDS 进行操作
 
 	Total 对表进行统计返回的值
+--------------------------------------------------------------------------
+
+	type User struct {
+		gorm.Model
+		Name      string    `json:"name"        gorm:"comment:昵称;column:name"           validate:"min=2,max=10"`
+		BirthDate time.Time `json:"birth_date"  gorm:"comment:出生年月;column:birth_date"  validate:"required"`
+		Gender    string    `json:"gender"      gorm:"comment:性别;column:gender"         validate:"oneof=男 女"`
+	}
+
+>	1. 例如： 获取一条完整的数据
+		operate := gam.NewOperate(cdb.FIRST, User{}, gam.DefaultField("id", id))
+		if err := operate.Join(common.GDb).Error; err != nil {
+			panic(err)
+			return
+		}
+		users := operate.Data.([]User) // 这里一定是一个数组
+
+----------------------------------------------------------------------------
+
+	type PartUser struct {
+		Name string `json:"name"`
+	}
+
+>	2. 例如： 获取一条部分的数据
+		operate := gam.NewOperate(cdb.FIRST, User{}, gam.DefaultField("id", id))
+		operate.Data = &PartUser{}  								// 需要获取的具体结构体
+		if err := operate.Join(common.GDb).Error; err != nil {
+			panic(err)
+			return
+		}
+		user := operate.Data.(PartUser)                            // 这里一定是具体结构体
+
 */
 type Operate struct {
 	Fields []Fielder   // 过滤属性去拼接db
@@ -58,8 +90,8 @@ func (o *Operate) Join(db *gorm.DB) *gorm.DB {
 		/*
 			注意一下 GORM 只会更新非零值的字段，如果需要更新零值字段需要和Select联合使用 https://gorm.io/zh_CN/docs/update.html#%E6%9B%B4%E6%96%B0%E5%A4%9A%E5%88%97
 
-			f1 := gam.NewField("IsFill", "", cdb.NULLMatch, cdb.SELECT) // 选中可能的非零值，如果要全部更新，可以使用*
-			f2 := gam.NewField("id", 10, cdb.AccurateMatch, cdb.AND)    // 更新的筛选条件
+			f1 := gam.NewField("IsFill", "", cdb.NIL, cdb.SELECT) // 选中可能的非零值，如果要全部更新，可以使用*
+			f2 := gam.NewField("id", 10, cdb.ACC, cdb.AND)       // 更新的筛选条件
 			operate := gam.NewOperate(cdb.UPDATES, Api{IsFill: false}, f1, f2)
 			if err := operate.Join(db).Error; err != nil {
 				panic(err)

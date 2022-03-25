@@ -25,31 +25,3 @@ func RemovePtr(t reflect.Type) reflect.Type {
 	}
 	return t
 }
-
-// ReflectByType 根据结构体获取该结构体的类型，
-func ReflectByType(object interface{}) reflect.Type {
-	typ := reflect.TypeOf(object)
-	return RemovePtr(typ)
-}
-
-/*
-	CreateArray 通过反射获取数组对象
-
-	object 结构体对象
-
-	len 长度
-
-	cap 容量
-*/
-func CreateArray(object interface{}, len, cap int) interface{} {
-	sliceType := ReflectByType(object)
-	slice := reflect.MakeSlice(reflect.SliceOf(sliceType), len, cap)
-	return slice.Interface()
-}
-
-// ReflectToObject 获取结构体实例化对象，这个是空对象
-func ReflectToObject(object interface{}) interface{} {
-	typ := ReflectByType(object)
-	obj := reflect.New(typ).Interface()
-	return obj
-}

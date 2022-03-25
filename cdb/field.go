@@ -73,7 +73,7 @@ func (f *field) Parse(db *gorm.DB) *gorm.DB {
 }
 
 // NewField 初始化数据库操作属性
-func NewField(key, value interface{}, match MatchType, ship ShipType) Fielder {
+func NewField(key, value any, match MatchType, ship ShipType) Fielder {
 	return &field{
 		k:     key,
 		v:     value,
@@ -82,6 +82,6 @@ func NewField(key, value interface{}, match MatchType, ship ShipType) Fielder {
 	}
 }
 
-func DefaultField(key, value interface{}) Fielder {
+func DefaultField(key, value any) Fielder {
 	return NewField(key, value, ACC, AND)
 }

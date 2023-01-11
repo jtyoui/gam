@@ -1,13 +1,14 @@
-// Package router
+// Package gam
 // @Time  : 2021/10/21 上午10:49
 // @Author: Jtyoui@qq.com
 // @note  : 自动扫描路由
-package router
+package gam
 
 import (
 	"embed"
 	"github.com/gin-gonic/gin"
 	"github.com/jtyoui/gam/dao"
+	"github.com/jtyoui/gam/router"
 	"github.com/jtyoui/gam/router/name"
 	"github.com/jtyoui/gam/tool"
 	"github.com/jtyoui/gam/web"
@@ -22,17 +23,23 @@ type ginRouter struct {
 	name.ChangeName
 }
 
-// NewGinRouter 初始化
-func NewGinRouter(g *gin.RouterGroup, fs *embed.FS) *ginRouter {
+// NewGinFsRouter 初始化,如果是编译成二进制文件，那么需要使用该方法
+// fs 需要引入dao层
+func NewGinFsRouter(g *gin.RouterGroup, fs *embed.FS) *ginRouter {
 	return &ginRouter{
 		rg: g,
 		fs: fs,
 	}
 }
 
+// NewGinRouter 初始化
+func NewGinRouter(g *gin.RouterGroup) *ginRouter {
+	return NewGinFsRouter(g, nil)
+}
+
 // findName 获取该结构体的定义名称，如果结构体没有实现IGroupName接口，那么默认
 // 路由名称是该结构体名字的小写，否则是定义函数的返回值
-func (g *ginRouter) setName(v reflect.Value, path string, f NameFunc) (value string) {
+func (g *ginRouter) setName(v reflect.Value, path string, f router.NameFunc) (value string) {
 	value, ok := f.GetName(v, path)
 	if !ok {
 		value = g.Change(path)
@@ -41,13 +48,13 @@ func (g *ginRouter) setName(v reflect.Value, path string, f NameFunc) (value str
 }
 
 // 设置单一的路由
-func (g *ginRouter) setRouter(router interface{}) {
-	v := tool.ReflectByValue(router) // 初始化的结构体
-	t := v.Type()                    // 转为类型
+func (g *ginRouter) setRouter(route interface{}) {
+	v := tool.ReflectByValue(route) // 初始化的结构体
+	t := v.Type()                   // 转为类型
 
 	// 获取到分组的名字,也就是结构体名字
 	r := t.Elem().Name()
-	groupName := g.setName(v, r, GroupNameFunc)
+	groupName := g.setName(v, r, router.GroupNameFunc)
 
 	// 将结构体名字加入路由分组
 	newRouter := g.rg.Group(groupName)
@@ -88,7 +95,7 @@ func (g *ginRouter) setRouter(router interface{}) {
 			realRouter := strings.TrimPrefix(methodName, hrm)
 
 			// 进行改变命名规则
-			path := g.setName(v, realRouter, ApiNameFunc)
+			path := g.setName(v, realRouter, router.ApiNameFunc)
 
 			// 输入：method对象也就是路由函数输入需要两个参数，一个是路由地址，另一个是执行路由的函数
 			inputs := []reflect.Value{
@@ -105,7 +112,7 @@ func (g *ginRouter) setRouter(router interface{}) {
 // AutoRouter 自动注册路由
 func (g *ginRouter) AutoRouter(routers ...interface{}) {
 	// 扫描只要实现了该方法的接口
-	for _, router := range routers {
-		g.setRouter(router)
+	for _, r := range routers {
+		g.setRouter(r)
 	}
 }
